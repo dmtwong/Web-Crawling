@@ -152,3 +152,40 @@ write.table(big_df, file = file, row.names=F,
             col.names=F, sep ="\t", quote = F)
 system.time(fread(file))
 system.time(read.table(file, header = F, sep= "\t"))
+
+############ Read MySQL ###############
+install.packages('RMySQL')
+library(RMySQL)
+# assign handle for connection
+sql_Db <- dbConnect(MySQL(), user = "genome", 
+                    host ="genome-mysql.cse.ucsc.edu")
+result <- dbGetQuery(sql_Db, 'show databases;')
+dbDisconnect(sql_Db) # VERY IMPORTANT
+
+#connecting to specific database (not server only )
+database_1 <- dbConnect(MySQL(), user = "genome", db= "hg19",
+                    host ="genome-mysql.cse.ucsc.edu")
+lst_tables <- dbListTables(database_1)
+dbListFields(database_1,"augustusGene") 
+#fields/variables that are stored in the table of augustusGene in database hg19
+
+dbGetQuery(database_1, "select count(*) from augustusGene") #standard sql commend
+
+# read the whole table
+df_sql_1 <- dbReadTable(database_1, "augustusGene")
+head(df_sql_1)
+
+# read subset of table
+#Note dbSendQuery send query to database but not yet suck back to comp until fetch 
+sql_query_1 <- dbSendQuery(database_1, "select * from augustusGene where bin
+                           between 80 and 585")
+aff_bin <- fetch(sql_query_1)
+names(aff_bin)
+summary(aff_bin$bin);table(aff_bin$bin)
+# read subset of table
+aff_bin2 <- fetch(sql_query_1, 15)
+summary(aff_bin2$bin);table(aff_bin2$bin)
+
+dbClearResult(sql_query_1) ## Again, don't forget 
+dim(aff_bin); dim(aff_bin2)
+dbDisconnect(database_1) ## last but not least
