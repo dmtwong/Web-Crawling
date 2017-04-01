@@ -207,8 +207,22 @@ chk <- xpathSApply(html_2, '//div[@class="item"]', xmlValue)
 install.packages('curl')
 library(curl)
 library(httr)
+library(jsonlite)
 html_3 <- GET(url_1)
 content_get <- content(html_3, as = "text")
 parsed_3 <- htmlParse(content_get, asText=T)
 xpathSApply(parsed_3, '//div[@class="item"]', xmlValue)
 
+### 103: GET (httr) from API
+# get infor from hometimeline
+?oauth_app
+myapp <- oauth_app("twitter", 
+                   key = mykey,
+                   secret = mysecret)
+sig <- sign_oauth1.0(myapp, 
+                     token = mytoken,
+                     token_secret = mytokensecret)
+homeTL <- GET("https://api.twitter.com/1.1/statuses/home_timeline.json", sig)
+json_2 <- content(homeTL)
+json_2_mod <- jsonlite::fromJSON(toJSON(json_2))
+json_2_mod[1,1:4] # a dataframe is created 
