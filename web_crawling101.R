@@ -59,3 +59,19 @@ doc2 <- htmlTreeParse('http://espnfc.com/club/manchester-united/360/index',
                       useInternal = TRUE)
 teams <- xpathSApply(doc2, "//div[@class='team-name']//span",xmlValue) 
 
+############ JSON: fetch over stat from my git account ###############
+install.packages('jsonlite')
+library(jsonlite)
+json_1 <- fromJSON("https://api.github.com/users/dmtwong/repos")
+names(json_1)
+json_1$name;json_1$updated_at;json_1$git_url
+
+#Create Json from a default data and then read it as json 
+data(mtcars)
+json_2 <- toJSON(mtcars, pretty = T)
+cat(json_2)
+
+mtcars_2 <- fromJSON(json_2)
+typeof(mtcars_2);class(mtcars_2);names(mtcars_2);names(mtcars)
+head(mtcars_2)
+
