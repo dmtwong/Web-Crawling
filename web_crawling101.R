@@ -75,3 +75,80 @@ mtcars_2 <- fromJSON(json_2)
 typeof(mtcars_2);class(mtcars_2);names(mtcars_2);names(mtcars)
 head(mtcars_2)
 
+############ data table revised ###############
+## faster at subsetting grouping and updating var compare to data.frame
+## If subsetting with 1 dim provide dt[x]; rows will be return 
+install.packages('data.table')
+library(data.table)
+dt <- data.table(x = rnorm(9),
+                 y = rep(c('a','b','c'), 3),
+                 z = rnorm(9))
+tables()
+d2 <- data.table(x = rnorm(12),
+                 y = rep(c('a','b','c'), 4),
+                 z = rnorm(12))
+tables()
+d2[2,];d2[,2];d2[2] #d2[2] return 2nd row as well
+d2[,d2$y=="b"] #same as d2$y=="b"
+d2[d2$y=="b"]; d2[d2$y=="b",] 
+{
+  x=1
+  y=2
+}
+k = {print(10);5}
+print(k)
+# instead we could pass a list of function on data table obj
+dt_2 <- as.data.table(matrix(1:99, nrow=9))
+names(dt_2) <- letters[1:11]
+dt_2[, list(mean(a), sum(b), length(k))]
+d2[,table(y)]
+
+# adding new col
+dt_2[, ksquar2:=k^2] #better as no need to create a copy of data frame
+#memory efficient if dataset is big
+head(dt_2,2)
+#but then it will create draw back as referencing the same obj
+dt_2_fake_copy <- dt_2
+dt_2[,ksquar2:=NA]
+head(dt_2,2)
+head(dt_2_fake_copy,2)
+dt_2_real_copy <- copy(dt_2)
+dt_2[,ksquar2:=5]
+head(dt_2,2); head(dt_2_real_copy,2)
+# perform multiply step function to create var
+dt_2[,m:= {
+  tmp <- (a+b+c+d+e+f+g+h+i+j+k);
+  mean(tmp)
+}]
+# plyr like opteration
+dt_2[, bool_a:={
+  a>5
+}]
+dt_2[, group_sum:=
+  sum(a+b+c+d+e+f+g+h+i+j+k), by = !bool_a
+]
+set.seed(1234)
+dt_3 <- data.table(x=sample(letters[1:3], 1E6, T))
+dt_3[, .N, by=x]
+#recap dt
+head(dt)
+setkey(dt, y)
+dt['b']
+
+dt_4join1 <- data.table(a = rnorm(9),
+                       y = rep(c('a','b','c'), 3),
+                       b = rnorm(9))
+dt_4join2 <- data.table(x = rnorm(3),
+                       y = c('a','b','c'),
+                       z = rnorm(3))
+dt_4join1;dt_4join2
+setkey(dt_4join1,y); setkey(dt_4join2,y)
+merge(dt_4join1, dt_4join2)
+
+# fast reading: df is created for comparision
+big_df <-data.frame(rnorm(1E6), rnorm(1E6))
+file <- tempfile()
+write.table(big_df, file = file, row.names=F,
+            col.names=F, sep ="\t", quote = F)
+system.time(fread(file))
+system.time(read.table(file, header = F, sep= "\t"))
