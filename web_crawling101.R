@@ -33,5 +33,29 @@ download.file(url_yahoo_finance('0055.HK', "1970-01-01", '2017-03-31'), '0055_lo
 download.file(url_yahoo_finance('0620.HK', "2016-02-30", '2017-03-31'), '0620_wrong.csv')
 download.file(url_yahoo_finance('0620.HK', "2016-03-30", '2017-03-31'), '0620.csv')
 
+######### XML ####################Don't use xmlTreeParse if url starts with https
+install.packages(c('httr','XML','RCurl'))
+library(XML);library(RCurl);library(httr)
+#Convert to df#
+f = system.file("exampleData", "size.xml", package = "XML")
+xmlToDataFrame(f, c("integer", "integer", "numeric"))
 
+#read XML as it is #
+doc1 <- xmlTreeParse(system.file("exampleData", "mtcars.xml", package="XML"))
+rootNode <- xmlRoot(doc1)
+xmlName(rootNode)
+names(rootNode)
+
+rootNode[[1]] #variables contain variable tag; looks like Var descri for dataset
+rootNode[[1]][[1]] # takeout the first element in 'variables'; variable mpg  
+rootNode[[1]][[1]][[1]] 
+
+xmlSApply(rootNode[[1]], xmlValue) # now extend to extract multi part of xml file all in once
+xml_to_df <- xmlToDataFrame(doc1$doc$file)
+xmlSApply(rootNode, xmlValue)
+
+#XML from internet #
+doc2 <- htmlTreeParse('http://espnfc.com/club/manchester-united/360/index', 
+                      useInternal = TRUE)
+teams <- xpathSApply(doc2, "//div[@class='team-name']//span",xmlValue) 
 
