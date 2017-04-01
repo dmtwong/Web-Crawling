@@ -189,3 +189,26 @@ summary(aff_bin2$bin);table(aff_bin2$bin)
 dbClearResult(sql_query_1) ## Again, don't forget 
 dim(aff_bin); dim(aff_bin2)
 dbDisconnect(database_1) ## last but not least
+
+############ Start webscraping  ###############
+### 102: programmically extracting data from html 
+#approach 1: readLines() unpleasnt though as it is unformat
+con = url("http://www.hkma.gov.hk/eng/market-data-and-statistics/economic-and-financial-data-for-hong-kong.shtml")
+html_1 <- readLines(con)
+close(con)
+html_1
+#approach 2: parsing with XML (recap)
+library(XML)
+url_1 <- 'http://www.hkma.gov.hk/eng/market-data-and-statistics/economic-and-financial-data-for-hong-kong.shtml'
+html_2 <- htmlTreeParse(url_1, useInternalNodes = T)
+# check update date
+chk <- xpathSApply(html_2, '//div[@class="item"]', xmlValue)
+#approach 3: 'GET' from package 'httr' (recap)
+install.packages('curl')
+library(curl)
+library(httr)
+html_3 <- GET(url_1)
+content_get <- content(html_3, as = "text")
+parsed_3 <- htmlParse(content_get, asText=T)
+xpathSApply(parsed_3, '//div[@class="item"]', xmlValue)
+
