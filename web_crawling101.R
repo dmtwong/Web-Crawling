@@ -226,3 +226,61 @@ homeTL <- GET("https://api.twitter.com/1.1/statuses/home_timeline.json", sig)
 json_2 <- content(homeTL)
 json_2_mod <- jsonlite::fromJSON(toJSON(json_2))
 json_2_mod[1,1:4] # a dataframe is created 
+
+install.packages('dplyr')
+library(dplyr)
+#data('chicago')
+tmp <- mtcars
+names(tmp)
+
+# select columns/variables
+head(select(tmp, disp:wt))
+head(select(tmp, -c(disp:wt)))
+
+# filter: select rows
+filter(tmp, gear>4)
+filter(tmp, gear>4 & carb == 2)
+filter(tmp, gear>4 | carb == 2)
+
+# arrange: order rows according to certain variable orders
+arrange(tmp, mpg)
+arrange(tmp, desc(mpg))
+arrange(tmp, cyl, desc(gear), mpg) 
+
+# rename selected var and leave others untouched
+tmp2<- rename(tmp, weight = wt)
+names(tmp2)
+
+# mutate: create new variable
+tmp2<- mutate(tmp2, mpg_demean = mpg - mean(mpg, na.rm = T))
+head(tmp2)
+quantile(tmp2$mpg)
+tmp2<- mutate(tmp2, high_mpg = factor(1* (mpg>30), labels = c(FALSE, TRUE)))
+str(tmp2)
+tail(tmp2)
+
+# groupby, then summarize function
+tmp3 <- group_by(tmp2, high_mpg)
+summarize(tmp3, mu_mpg= mean(mpg), mu_disp = mean(disp))
+head(tmp)
+
+# try dataset with date 
+ds_yahoo_fin <- read.csv('0055_long.csv')
+head(ds_yahoo_fin);tail(ds_yahoo_fin)
+ds_yahoo_fin_mod <- mutate(ds_yahoo_fin, year = as.POSIXlt(Date)$year + 1900)
+head(ds_yahoo_fin_mod);tail(ds_yahoo_fin_mod)
+years_ds <- group_by(ds_yahoo_fin_mod, year)
+head(years_ds)
+years_ds <- summarize(years_ds, year_high = max(High), year_low = min(Low))
+
+### GREAT FEATURE: Chain different operation together in a readable way
+## using pipeline operator %>% to feed through a pipeline of operation to
+## create different data set 
+
+# data frame does not required to be specified 
+years_ds_2 <- ds_yahoo_fin %>% 
+  mutate(year = as.POSIXlt(Date)$year + 1900) %>% 
+  group_by(year) %>% 
+  summarize(year_high = max(High), year_low = min(Low))
+years_ds == years_ds_2
+
