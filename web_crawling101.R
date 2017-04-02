@@ -284,3 +284,43 @@ years_ds_2 <- ds_yahoo_fin %>%
   summarize(year_high = max(High), year_low = min(Low))
 years_ds == years_ds_2
 
+### merging tables 101 
+
+if(!file.exists("./data")){
+  dir.create("./data")
+  }
+fileUrl1 = "https://dl.dropboxusercontent.com/u/7710864/data/reviews-apr29.csv"
+fileUrl2 = "https://dl.dropboxusercontent.com/u/7710864/data/solutions-apr29.csv"
+download.file(fileUrl1,destfile="./data/reviews.csv",method="curl")
+download.file(fileUrl2,destfile="./data/solutions.csv",method="curl")
+
+reviews = read.csv("./data/reviews.csv"); solutions <- read.csv("./data/solutions.csv")
+head(reviews,2); head(solutions,2)
+# reviews solution_id == solutions id
+names(reviews)
+names(solutions)
+
+rev_merge_sol <- merge(reviews, solutions,
+                       by.x = "solution_id",
+                       by.y = "id")
+# intersect merge all columns with same names 
+# but often table with same fields don't necessaary refer to same key
+intersect( names(reviews), names(solutions) )
+head( merge( reviews, solutions,
+       all = T) )
+
+# join: again, only merge by common name
+
+df1 <- data.frame(id = sample(letters[1:26]), x = rnorm(26))
+df2 <- data.frame(id = sample(letters[1:26]), y = rnorm(26))
+df3 <- data.frame(id = sample(letters[1:26]), x = rnorm(26))
+df4 <- data.frame(id = sample(letters[1:26]), z = rnorm(26))
+df_list <- list(df1,df2,df3, df4)
+library(plyr)
+tmp <- join_all(df_list)
+head_2_order_id <- function(x){
+  head(arrange(x, id), 2)
+}
+head_2_order_id(df1);head_2_order_id(df2);head_2_order_id(df3)
+head_2_order_id(df4); head_2_order_id(tmp)
+#interestingly df_3 is drop out because of common col
